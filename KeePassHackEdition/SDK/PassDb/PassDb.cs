@@ -247,8 +247,7 @@ namespace KeePassHackEdition.SDK.PassDb
 
         private void CryptDatabase(byte[] databaseBytes)
         {
-            string cryptKey = VMProtect.SDK.DecryptString(
-                "oQPnRzA1EjnwG94oGuu3IaT4bFTVxhLzLY1vevlf3H6qvYcg3TbHIjfPGsugk3bRDnHR3MSeWbwQ1kHJy1LYbrtbI9ONSMfsD9KGVicPuaYSX");
+            string cryptKey = "oQPnRzA1EjnwG94oGuu3IaT4bFTVxhLzLY1vevlf3H6qvYcg3TbHIjfPGsugk3bRDnHR3MSeWbwQ1kHJy1LYbrtbI9ONSMfsD9KGVicPuaYSX";
             SecretAlg alg = new SecretAlg(cryptKey);
             alg.Crypt(databaseBytes);
         }

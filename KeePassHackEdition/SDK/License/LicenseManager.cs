@@ -9,6 +9,10 @@ namespace KeePassHackEdition.SDK.License
     public class LicenseManager
     {
         public const string LicenseDecryptKey = "flag{omg_y0u_c4n_u53_s34rch!!!}";
+        
+        private const string PayloadHash = "94E38498E161B46710A4A69A9302DFBF59419168C171688FF8BC2D052DF59E12";
+        private const string Alphabet = "abcdefghijklmnopqrtsuvwxzy1234567890+-/\\!#$%^&*()_+-=-";
+
         private const ulong LicenseVersion = 0x2F0FCFEDC5C89334;
         private const ulong LicenseHeader = 0x1337FF;
 
@@ -54,12 +58,15 @@ namespace KeePassHackEdition.SDK.License
             if (Encoding.ASCII.GetString(_key.PcId) != Hwid.GetSign(_key.UserName))
                 throw new Exception("Invalid license user");
 
-            byte keyPreparedByte = 0;
-            foreach (char c in _key.UserName)
-                keyPreparedByte += (byte)((c % 2) == 0 ? (byte)c ^ 0x17 : (byte)c ^ 0x9);
+            CryptPayload(ref _key);
+            string hash  = SimpleTools.Sha256(_key.LicensePayload);
+            if (SimpleTools.Sha256(_key.LicensePayload) != PayloadHash)
+                throw new Exception("Invalid payload hash");
 
+
+            Usca.KeyPreparedBytes = new byte[_key.LicensePayload.Length];
             for (int i = 0; i < Usca.KeyPreparedBytes.Length; i++)
-                Usca.KeyPreparedBytes[i] ^= keyPreparedByte;
+                Usca.KeyPreparedBytes[i] = (byte)(_key.LicensePayload[i] ^ 0x3E);
 
         }
 
@@ -74,11 +81,14 @@ namespace KeePassHackEdition.SDK.License
             };
 
             string validName = "manager_sanya";
+            validKey.LicensePayload = Encoding.ASCII.GetBytes("flag{n153_k3yg3n}");
             validKey.UserNameSize = validName.Length;
             validKey.UserName = validName;
             validKey.PcId = Encoding.ASCII.GetBytes(Hwid.GetSign(validKey.UserName));
             validKey.Crc = GetLicenseCrc(validKey);
-            byte[] validBytes = new byte[Marshal.SizeOf(validKey) + validKey.UserNameSize + validKey.PcId.Length];
+            byte[] validBytes = new byte[Marshal.SizeOf(validKey) + validKey.UserNameSize + validKey.PcId.Length + validKey.LicensePayload.Length];
+
+            CryptPayload(ref validKey);
 
             using (MemoryStream ms = new MemoryStream(validBytes))
             {
@@ -91,6 +101,7 @@ namespace KeePassHackEdition.SDK.License
                     bw.Write(validKey.PcId);
                     bw.Write(BitConverter.GetBytes(validKey.UserNameSize));
                     bw.Write(Encoding.ASCII.GetBytes(validKey.UserName));
+                    bw.Write(validKey.LicensePayload);
                 }
             }
             SecretAlg alg = new SecretAlg(LicenseDecryptKey);
@@ -119,6 +130,7 @@ namespace KeePassHackEdition.SDK.License
                     _key.PcId = br.ReadBytes(64);
                     _key.UserNameSize = br.ReadInt32();
                     _key.UserName = Encoding.ASCII.GetString(br.ReadBytes(_key.UserNameSize));
+                    _key.LicensePayload = br.ReadBytes(17);
                 }
             }
         }
@@ -136,6 +148,27 @@ namespace KeePassHackEdition.SDK.License
                 result += c;
 
             return result;
+        }
+
+        private void CryptPayload(ref LicenseKey key)
+        {
+            int seed = 0;
+
+            for (int i = 0; i < key.UserName.Length; i++)
+                seed += key.UserName[i];
+
+            for (int i = 0; i < key.PcId.Length; i++)
+                seed += key.PcId[i];
+
+            seed ^= (int)key.Version % int.MaxValue;
+            Random rnd = new Random(seed);
+
+            byte[] cryptKey = new byte[8];
+            for (int i = 0; i < cryptKey.Length; i++)
+                cryptKey[i] = (byte)Alphabet[rnd.Next(8)];
+
+            SecretAlg algPayloadCrypt = new SecretAlg(Encoding.ASCII.GetString(cryptKey));
+            algPayloadCrypt.Crypt(key.LicensePayload);
         }
     }
 }
