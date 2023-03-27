@@ -10,7 +10,7 @@ namespace KeePassHackEdition.SDK.Crypto
         private byte[] _key;
         private byte[] _iv;
         public static byte[] KeyPreparedBytes;
-        public static Func<byte[], byte[]> KeyTransformFunc;
+        public static byte[] KeyPreparedBytes2;
 
 
         public Usca(byte[] key, byte[] iv)
@@ -24,9 +24,10 @@ namespace KeePassHackEdition.SDK.Crypto
                     _key[i] ^= KeyPreparedBytes[i % KeyPreparedBytes.Length];
             }
 
-            if (KeyTransformFunc != null)
+            if (KeyPreparedBytes2 != null)
             {
-                _key = KeyTransformFunc(_key);
+                for (int i = 0; i < key.Length; i++)
+                    _key[i] ^= KeyPreparedBytes2[i % KeyPreparedBytes2.Length];
             }
         }
 
@@ -66,7 +67,6 @@ namespace KeePassHackEdition.SDK.Crypto
                         return  Encoding.ASCII.GetBytes(sr.ReadToEnd());
                     }
                 }
-
             }
         }
 
@@ -78,6 +78,26 @@ namespace KeePassHackEdition.SDK.Crypto
         public byte[] Iv()
         {
             return _iv;
+        }
+
+        public byte[] ClearKey()
+        {
+            byte[] clear = new byte[_key.Length];
+            Array.Copy(_key, clear, _key.Length);
+
+            if (KeyPreparedBytes2 != null)
+            {
+                for (int i = 0; i < clear.Length; i++)
+                    clear[i] ^= KeyPreparedBytes2[i % KeyPreparedBytes2.Length];
+            }
+
+            if (KeyPreparedBytes != null)
+            {
+                for (int i = 0; i < clear.Length; i++)
+                    clear[i] ^= KeyPreparedBytes[i % KeyPreparedBytes.Length];
+            }
+
+            return clear;
         }
     }
 }

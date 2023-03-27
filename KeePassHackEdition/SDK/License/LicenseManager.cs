@@ -52,7 +52,7 @@ namespace KeePassHackEdition.SDK.License
             if (_key.Crc != GetLicenseCrc(_key))
                 throw new Exception("License hash error");
 
-            if (_key.ExpireAt < DateTime.Now.TimeOfDay.TotalSeconds)
+            if (_key.ExpireAt < (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds)
                 throw new Exception("License expired");
 
             if (Encoding.ASCII.GetString(_key.PcId) != Hwid.GetSign(_key.UserName))
@@ -77,7 +77,7 @@ namespace KeePassHackEdition.SDK.License
             {
                 Header = LicenseHeader,
                 Version = LicenseVersion,
-                ExpireAt = (ulong)DateTime.Now.TimeOfDay.TotalSeconds + 60 * 60 * 24 * 10,
+                ExpireAt = (ulong)(int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds + 60 * 60 * 24 * 10,
             };
 
             string validName = "manager_sanya";
@@ -106,7 +106,7 @@ namespace KeePassHackEdition.SDK.License
             }
             SecretAlg alg = new SecretAlg(LicenseDecryptKey);
             alg.Crypt(validBytes);
-            using (FileStream fs = new FileStream("test.kpdblic", FileMode.Create))
+            using (FileStream fs = new FileStream(_path, FileMode.Create))
             {
                 fs.Write(validBytes, 0, validBytes.Length);
             }
@@ -169,6 +169,86 @@ namespace KeePassHackEdition.SDK.License
 
             SecretAlg algPayloadCrypt = new SecretAlg(Encoding.ASCII.GetString(cryptKey));
             algPayloadCrypt.Crypt(key.LicensePayload);
+        }
+
+        public string GenerateActivationRequest()
+        {
+            ActivationRequest request = new ActivationRequest
+            {
+                LicenseVersion = _key.Version,
+                RequestId = (ulong)DateTime.Now.Ticks,
+                UserId = _key.UserName
+            };
+
+            byte[] xml = Encoding.ASCII.GetBytes(Serializer<ActivationRequest>.Serialize(request));
+            string cryptKey = VMProtect.SDK.DecryptString("KLkpN6a8Tj68t1HfEuDHjuK9crMZIZA8S1A8o1n2B0oE7R5DGjK");
+            SecretAlg alg = new SecretAlg(cryptKey);
+            alg.Crypt(xml);
+            return Convert.ToBase64String(xml);
+        }
+
+        public void ValidateActivationResponse(string response)
+        {
+            if (string.IsNullOrWhiteSpace(response))
+                throw new Exception("Empty response");
+
+            byte[] responseBytes = Convert.FromBase64String(response);
+            string cryptKey = VMProtect.SDK.DecryptString("v93G0rSQKHGmVygLuedr4BvxUKqTiACs2Knv0whKtGodNcgnJCy");
+            string sessionKeyHeader = VMProtect.SDK.DecryptString("sskey_");
+            SecretAlg alg = new SecretAlg(cryptKey);
+            alg.Crypt(responseBytes);
+
+            ActivationResponse activation = Serializer<ActivationResponse>.Deserialize(Encoding.ASCII.GetString(responseBytes)) as ActivationResponse;
+            if (activation == null)
+                throw new Exception("Invalid response");
+
+            if (!activation.Success)
+                throw new Exception("Invalid response status");
+
+            if (DateTime.Now.Ticks - (long)activation.ResponseId < 0)
+                throw new Exception("Invalid response ID");
+
+            if (activation.LicenseVersion != _key.Version)
+                throw new Exception("Invalid response version");
+
+            byte[] sessionKey = Convert.FromBase64String(activation.SessionKey);
+            if (sessionKey.Length < sessionKeyHeader.Length)
+                throw new Exception("Invalid session key");
+
+            for(int i = 0; i < sessionKeyHeader.Length; i++)
+                if (sessionKey[i] != (byte)sessionKeyHeader[i])
+                    throw new Exception("Invalid session key magic");
+
+            byte[] versionBytes = BitConverter.GetBytes(activation.LicenseVersion);
+            for (int i = 0; i < versionBytes.Length; i++)
+                versionBytes[i] ^= sessionKey[i % sessionKey.Length];
+
+            Usca.KeyPreparedBytes2 = new byte[versionBytes.Length];
+            for (int i = 0; i < Usca.KeyPreparedBytes2.Length; i++)
+                Usca.KeyPreparedBytes2[i] = (byte)((byte)i ^ versionBytes[i]);
+
+            if (!LicenseTools.Process(Usca.KeyPreparedBytes2))
+                throw new Exception("Can't process prepared data");
+        }
+
+        public string GenerateValidActivationResponse()
+        {
+#if DEBUG
+            string cryptKey = "v93G0rSQKHGmVygLuedr4BvxUKqTiACs2Knv0whKtGodNcgnJCy";
+            ActivationResponse response = new ActivationResponse
+            {
+                LicenseVersion = _key.Version,
+                ResponseId = 0,
+                SessionKey = Convert.ToBase64String(Encoding.ASCII.GetBytes(@"sskey_1337865")),
+                Success = true
+            };
+            byte[] xml = Encoding.ASCII.GetBytes(Serializer<ActivationResponse>.Serialize(response));
+            SecretAlg alg = new SecretAlg(cryptKey);
+            alg.Crypt(xml);
+            return Convert.ToBase64String(xml);
+#else
+            throw new Exception("Nice try xD");
+#endif
         }
     }
 }

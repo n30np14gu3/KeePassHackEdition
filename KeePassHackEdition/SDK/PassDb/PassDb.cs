@@ -94,7 +94,7 @@ namespace KeePassHackEdition.SDK.PassDb
             
             //Init master key
             DecryptEntryData(_database.Entries[0]);
-            byte[] key = Convert.FromBase64String(Encoding.ASCII.GetString(Convert.FromBase64String(_database.Entries[0].EntryData)));
+            byte[] key = Convert.FromBase64String(_database.Entries[0].EntryData);
             _masterUsca = new Usca(key.Take(32).ToArray(), key.Skip(32).Take(16).ToArray());
             DecryptEntryData(_database.Entries[1]);
             _databaseName = Encoding.ASCII.GetString(Convert.FromBase64String(_database.Entries[1].EntryData));
@@ -106,6 +106,7 @@ namespace KeePassHackEdition.SDK.PassDb
             foreach (DatabaseEntry entry in _database.Entries)
             {
                 DecryptEntryName(entry);
+                DecryptEntryData(entry);
             }
         }
 
@@ -138,7 +139,7 @@ namespace KeePassHackEdition.SDK.PassDb
                 throw new Exception("Invalid entry type");
 
             DecryptEntryData(_database.Entries[index]);
-            string password = Encoding.ASCII.GetString(Convert.FromBase64String(Encoding.ASCII.GetString(Convert.FromBase64String(_database.Entries[index].EntryData))));
+            string password = Encoding.ASCII.GetString(Convert.FromBase64String(_database.Entries[index].EntryData));
             EncryptEntryData(_database.Entries[index]);
 
             return password;
@@ -177,7 +178,7 @@ namespace KeePassHackEdition.SDK.PassDb
                 throw new Exception("Invalid entry type");
 
             DecryptEntryData(_database.Entries[index]);
-            byte[] fileData = Convert.FromBase64String(Encoding.ASCII.GetString(Convert.FromBase64String(_database.Entries[index].EntryData)));
+            byte[] fileData = Convert.FromBase64String(_database.Entries[index].EntryData);
             using (FileStream fs = new FileStream(savePath, FileMode.Create, FileAccess.Write))
             {
                 fs.Write(fileData, 0, fileData.Length);
@@ -193,7 +194,7 @@ namespace KeePassHackEdition.SDK.PassDb
             _database.Entries.Insert(0, new DatabaseEntry
                 {
                     DataEncrypted = false,
-                    EntryData = Convert.ToBase64String(_masterUsca.Key().Concat(_masterUsca.Iv()).ToArray()),
+                    EntryData = Convert.ToBase64String(_masterUsca.ClearKey().Concat(_masterUsca.Iv()).ToArray()),
                     EntryType = DatabaseEntryType.EntryTypeMasterKey,
                     EntryName = null,
                     NameEncrypted = false
@@ -230,6 +231,11 @@ namespace KeePassHackEdition.SDK.PassDb
                     }
                 }
             }
+
+            _database.Entries.RemoveAt(0);
+            _database.Entries.RemoveAt(0);
+            foreach (DatabaseEntry entry in _database.Entries)
+                DecryptEntryName(entry);
         }
 
         private void InitSessionKey()
@@ -247,7 +253,7 @@ namespace KeePassHackEdition.SDK.PassDb
 
         private void CryptDatabase(byte[] databaseBytes)
         {
-            string cryptKey = "oQPnRzA1EjnwG94oGuu3IaT4bFTVxhLzLY1vevlf3H6qvYcg3TbHIjfPGsugk3bRDnHR3MSeWbwQ1kHJy1LYbrtbI9ONSMfsD9KGVicPuaYSX";
+            string cryptKey = VMProtect.SDK.DecryptString("oQPnRzA1EjnwG94oGuu3IaT4bFTVxhLzLY1vevlf3H6qvYcg3TbHIjfPGsugk3bRDnHR3MSeWbwQ1kHJy1LYbrtbI9ONSMfsD9KGVicPuaYSX");
             SecretAlg alg = new SecretAlg(cryptKey);
             alg.Crypt(databaseBytes);
         }
@@ -298,12 +304,26 @@ namespace KeePassHackEdition.SDK.PassDb
                 return;
 
 
-            entry.EntryData = Convert.ToBase64String(
-                (entry.EntryType == DatabaseEntryType.EntryTypeMasterKey) ? 
-                    _sessionUsca.Decrypt(Convert.FromBase64String(entry.EntryData)) : 
+            entry.EntryData = Encoding.ASCII.GetString(
+                (entry.EntryType == DatabaseEntryType.EntryTypeMasterKey) ?
+                    _sessionUsca.Decrypt(Convert.FromBase64String(entry.EntryData)) :
                     _masterUsca.Decrypt(Convert.FromBase64String(entry.EntryData))
-                    );
+                );
             entry.DataEncrypted = false;
+        }
+
+        public Dictionary<int, KeyValuePair<string, DatabaseEntryType>> GetOpenData()
+        {
+            if (_database == null)
+                throw new Exception("Database not init");
+
+            Dictionary<int, KeyValuePair<string, DatabaseEntryType>> openData = new Dictionary<int, KeyValuePair<string, DatabaseEntryType>>();
+            for (int i = 0; i < _database.Entries.Count; i++)
+                openData.Add(i,
+                    new KeyValuePair<string, DatabaseEntryType>(_database.Entries[i].EntryName,
+                        _database.Entries[i].EntryType));
+
+            return openData;
         }
     }
 }
