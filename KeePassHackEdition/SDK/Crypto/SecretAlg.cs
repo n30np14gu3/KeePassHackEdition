@@ -37,7 +37,7 @@ namespace KeePassHackEdition.SDK.Crypto
             for (int i = 0; i < _secretBlock.Length; i++)
             {
                 //Calc index
-                j = (j + _secretBlock[i] + _secretBlock[i % _key.Length]) % 256;
+                j = (j + _secretBlock[i] + _key[i % _key.Length]) % 256;
 
                 //swap
                 byte tmp = _secretBlock[i];
@@ -50,6 +50,8 @@ namespace KeePassHackEdition.SDK.Crypto
         {
             _x = (_x + 1) % 256;
             _y = (_y + _secretBlock[_x]) % 256;
+
+            //Swap
             byte tmp = _secretBlock[_x];
             _secretBlock[_x] = _secretBlock[_y];
             _secretBlock[_y] = tmp;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Windows.Forms;
 using KeePassHackEdition.SDK.License;
 using KeePassHackEdition.SDK.PassDb;
@@ -13,17 +14,6 @@ namespace KeePassHackEdition
         [STAThread]
         static void Main()
         {
-            LicenseManager manager = new LicenseManager("test.kpdblic");
-            try
-            {
-                manager.LoadLicense();
-                manager.ValidateLicense();
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message);
-                return;
-            }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());

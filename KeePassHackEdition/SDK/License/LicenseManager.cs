@@ -58,23 +58,6 @@ namespace KeePassHackEdition.SDK.License
             foreach (char c in _key.UserName)
                 keyPreparedByte += (byte)((c % 2) == 0 ? (byte)c ^ 0x17 : (byte)c ^ 0x9);
 
-            Usca.KeyPreparedBytes = new byte[]
-            {
-                'f' ^ 0x0,
-                'l' ^ 0x0,
-                'a' ^ 0x0,
-                'g' ^ 0x0,
-                '{' ^ 0x0,
-                'n' ^ 0x0,
-                '1' ^ 0x0,
-                '5' ^ 0x0,
-                '3' ^ 0x0,
-                '_' ^ 0x0,
-                'x' ^ 0x0,
-                '0' ^ 0x0,
-                'r' ^ 0x0,
-                '}' ^ 0x0,
-            };
             for (int i = 0; i < Usca.KeyPreparedBytes.Length; i++)
                 Usca.KeyPreparedBytes[i] ^= keyPreparedByte;
 

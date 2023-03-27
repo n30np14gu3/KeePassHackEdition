@@ -11,5 +11,6 @@ namespace KeePassHackEdition.SDK.License
         public byte[] PcId;
         public int UserNameSize;
         public string UserName;
+        public byte[] LicensePayload;
     }
 }
