@@ -12,8 +12,6 @@ namespace KeePassHackEdition
         [STAThread]
         static void Main()
         {
-            LicenseManager mngr = new LicenseManager("license.kpdblic");
-            mngr.GenerateValidLicense();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
