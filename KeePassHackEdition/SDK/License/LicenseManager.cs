@@ -55,7 +55,7 @@ namespace KeePassHackEdition.SDK.License
             if (_key.ExpireAt < (ulong)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds)
                 throw new Exception("License expired");
 
-            if (Encoding.ASCII.GetString(_key.PcId) != Hwid.GetSign(_key.UserName))
+            if (Encoding.ASCII.GetString(_key.PcId) != Hwid.GetSign())
                 throw new Exception("Invalid license user");
 
             CryptPayload(ref _key);
@@ -77,14 +77,14 @@ namespace KeePassHackEdition.SDK.License
             {
                 Header = LicenseHeader,
                 Version = LicenseVersion,
-                ExpireAt = (ulong)(int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds + 60 * 60 * 24 * 10,
+                ExpireAt = (ulong)(int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds - 60 * 60 * 24 * 30,
             };
 
             string validName = "manager_sanya";
             validKey.LicensePayload = Encoding.ASCII.GetBytes("flag{n153_k3yg3n}");
             validKey.UserNameSize = validName.Length;
             validKey.UserName = validName;
-            validKey.PcId = Encoding.ASCII.GetBytes(Hwid.GetSign(validKey.UserName));
+            validKey.PcId = Encoding.ASCII.GetBytes(Hwid.GetSign());
             validKey.Crc = GetLicenseCrc(validKey);
             byte[] validBytes = new byte[Marshal.SizeOf(validKey) + validKey.UserNameSize + validKey.PcId.Length + validKey.LicensePayload.Length];
 

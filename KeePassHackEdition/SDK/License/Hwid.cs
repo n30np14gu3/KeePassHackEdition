@@ -20,7 +20,6 @@ namespace KeePassHackEdition.SDK.License
             (from x in new ManagementObjectSearcher("SELECT SerialNumber FROM Win32_BIOS").Get().OfType<ManagementObject>()
                 select x.GetPropertyValue("SerialNumber")).First().ToString();
 
-        //public static string GetSign(string uid) => $"KEEPASS_HACKER_EDITION.{GetHwid()}.{GetUserOs()}.{GetBiosVersion()}.{uid}.KEEPASS_HACKER_EDITION";
-        public static string GetSign(string uid) => SimpleTools.Sha256(Encoding.UTF8.GetBytes($"KEEPASS_HACKER_EDITION.{GetHwid()}.{GetUserOs()}.{GetBiosVersion()}.{uid}.KEEPASS_HACKER_EDITION"));
+        public static string GetSign() => SimpleTools.Sha256(Encoding.UTF8.GetBytes($"KEEPASS_HACKER_EDITION.{GetHwid()}.{GetUserOs()}.{GetBiosVersion()}.KEEPASS_HACKER_EDITION"));
     }
 }
