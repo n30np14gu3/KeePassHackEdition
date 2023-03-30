@@ -40,6 +40,9 @@ namespace KeePassHackEdition
                         if (Config.LicenseInfo == null)
                             return;
 
+                        if(string.IsNullOrWhiteSpace(Config.LicenseInfo.LicensePath))
+                            return;
+
                         if (!File.Exists(Config.LicenseInfo.LicensePath))
                         {
                             Config.LicenseInfo.LicensePath = null;
@@ -50,6 +53,7 @@ namespace KeePassHackEdition
 
                     }
                 }
+
 
                 ActivateLicense();
 
@@ -64,6 +68,11 @@ namespace KeePassHackEdition
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, @"LICENSE ACTIVATION ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (Config.LicenseInfo != null)
+                {
+                    Config.LicenseInfo.ActivationResponse = null;
+                    Config.LicenseInfo.LicensePath = null;
+                }
             }
 
         }
@@ -89,11 +98,16 @@ namespace KeePassHackEdition
             {
                 InitLicenseManager();
                 ActivateLicense();
-
+                Config.Activated = true;
+                bCreateDatabase.Enabled = true;
+                bOpenDatabase.Enabled = true;
+                bSaveDatabase.Enabled = true;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, @"LICENSE ACTIVATION ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Config.LicenseInfo.ActivationResponse = null;
+                Config.LicenseInfo.LicensePath = null;
             }
         }
 
@@ -121,6 +135,11 @@ namespace KeePassHackEdition
             Config.LicManager = new LicenseManager(Config.LicenseInfo.LicensePath);
             Config.LicManager.LoadLicense();
             Config.LicManager.ValidateLicense();
+            MessageBox.Show(
+                $@"Thank you for buying our software! Here's your discount coupon for other products that we produce: {Config.LicManager.GetLicensePromocode()}", 
+                @"INFO", 
+                MessageBoxButtons.OK, 
+                MessageBoxIcon.Information);
         }
 
         private void ActivateLicense()
@@ -292,5 +311,7 @@ namespace KeePassHackEdition
                 MessageBox.Show(ex.Message, @"ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void bAoutButton_Click(object sender, EventArgs e) => new AboutForm().ShowDialog();
     }
 }

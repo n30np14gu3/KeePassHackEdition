@@ -45,14 +45,14 @@
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.openLicenseDialog = new System.Windows.Forms.OpenFileDialog();
-            this.openDbDialog = new System.Windows.Forms.OpenFileDialog();
-            this.saveDbDialog = new System.Windows.Forms.SaveFileDialog();
             this.listContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.bAddEntry = new System.Windows.Forms.ToolStripMenuItem();
             this.bShowPassword = new System.Windows.Forms.ToolStripMenuItem();
             this.bSaveFile = new System.Windows.Forms.ToolStripMenuItem();
             this.bAddFile = new System.Windows.Forms.ToolStripMenuItem();
+            this.openLicenseDialog = new System.Windows.Forms.OpenFileDialog();
+            this.openDbDialog = new System.Windows.Forms.OpenFileDialog();
+            this.saveDbDialog = new System.Windows.Forms.SaveFileDialog();
             this.addFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.exporFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.mainMenu.SuspendLayout();
@@ -86,7 +86,7 @@
             // 
             this.bOpenDatabase.Enabled = false;
             this.bOpenDatabase.Name = "bOpenDatabase";
-            this.bOpenDatabase.Size = new System.Drawing.Size(180, 22);
+            this.bOpenDatabase.Size = new System.Drawing.Size(159, 22);
             this.bOpenDatabase.Text = "Open Database";
             this.bOpenDatabase.Click += new System.EventHandler(this.bOpenDatabase_Click);
             // 
@@ -94,7 +94,7 @@
             // 
             this.bCreateDatabase.Enabled = false;
             this.bCreateDatabase.Name = "bCreateDatabase";
-            this.bCreateDatabase.Size = new System.Drawing.Size(180, 22);
+            this.bCreateDatabase.Size = new System.Drawing.Size(159, 22);
             this.bCreateDatabase.Text = "Create Database";
             this.bCreateDatabase.Click += new System.EventHandler(this.bCreateDatabase_Click);
             // 
@@ -102,19 +102,19 @@
             // 
             this.bSaveDatabase.Enabled = false;
             this.bSaveDatabase.Name = "bSaveDatabase";
-            this.bSaveDatabase.Size = new System.Drawing.Size(180, 22);
+            this.bSaveDatabase.Size = new System.Drawing.Size(159, 22);
             this.bSaveDatabase.Text = "Save Database";
             this.bSaveDatabase.Click += new System.EventHandler(this.bSaveDatabase_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(177, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(156, 6);
             // 
             // bExit
             // 
             this.bExit.Name = "bExit";
-            this.bExit.Size = new System.Drawing.Size(180, 22);
+            this.bExit.Size = new System.Drawing.Size(159, 22);
             this.bExit.Text = "Exit";
             this.bExit.Click += new System.EventHandler(this.bExit_Click);
             // 
@@ -131,20 +131,21 @@
             // bActivateButton
             // 
             this.bActivateButton.Name = "bActivateButton";
-            this.bActivateButton.Size = new System.Drawing.Size(128, 22);
+            this.bActivateButton.Size = new System.Drawing.Size(180, 22);
             this.bActivateButton.Text = "Activation";
             this.bActivateButton.Click += new System.EventHandler(this.bActivateButton_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(125, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(177, 6);
             // 
             // bAoutButton
             // 
             this.bAoutButton.Name = "bAoutButton";
-            this.bAoutButton.Size = new System.Drawing.Size(128, 22);
+            this.bAoutButton.Size = new System.Drawing.Size(180, 22);
             this.bAoutButton.Text = "About";
+            this.bAoutButton.Click += new System.EventHandler(this.bAoutButton_Click);
             // 
             // passList
             // 
@@ -177,18 +178,6 @@
             // 
             this.columnHeader3.Text = "Data";
             this.columnHeader3.Width = 202;
-            // 
-            // openLicenseDialog
-            // 
-            this.openLicenseDialog.Filter = "Keepass license Files|*.kpdblic";
-            // 
-            // openDbDialog
-            // 
-            this.openDbDialog.Filter = "KeePass DB File|*.kpdb";
-            // 
-            // saveDbDialog
-            // 
-            this.saveDbDialog.Filter = "KeePass DB File|*.kpdb";
             // 
             // listContextMenu
             // 
@@ -228,6 +217,18 @@
             this.bAddFile.Size = new System.Drawing.Size(149, 22);
             this.bAddFile.Text = "Add File";
             this.bAddFile.Click += new System.EventHandler(this.bAddFile_Click);
+            // 
+            // openLicenseDialog
+            // 
+            this.openLicenseDialog.Filter = "Keepass license Files|*.kpdblic";
+            // 
+            // openDbDialog
+            // 
+            this.openDbDialog.Filter = "KeePass DB File|*.kpdb";
+            // 
+            // saveDbDialog
+            // 
+            this.saveDbDialog.Filter = "KeePass DB File|*.kpdb";
             // 
             // addFileDialog
             // 

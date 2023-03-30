@@ -17,6 +17,10 @@ namespace KeePassHackEdition
         public ActivationForm()
         {
             InitializeComponent();
+            bDev.Visible = true;
+#if DEBUG
+            bDev.Visible = true;
+#endif
         }
 
         private void bActivateOnline_CheckedChanged(object sender, EventArgs e)

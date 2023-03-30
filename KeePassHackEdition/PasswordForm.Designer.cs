@@ -74,7 +74,6 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "PasswordForm";
-            this.ShowInTaskbar = false;
             this.Text = "Input Password";
             this.ResumeLayout(false);
             this.PerformLayout();

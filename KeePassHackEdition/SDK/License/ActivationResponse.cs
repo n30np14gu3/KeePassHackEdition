@@ -5,6 +5,6 @@
         public bool Success { get; set; }
         public ulong ResponseId { get; set; }
         public ulong LicenseVersion { get; set; }
-        public string SessionKey { get; set; }
+        public string Magic { get; set; }
     }
 }

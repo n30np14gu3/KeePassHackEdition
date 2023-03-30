@@ -94,7 +94,6 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "NewEntryForm";
-            this.ShowInTaskbar = false;
             this.Text = "NewEntryForm";
             this.ResumeLayout(false);
             this.PerformLayout();

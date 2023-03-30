@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using KeePassHackEdition.SDK.Crypto;
@@ -193,11 +194,11 @@ namespace KeePassHackEdition.SDK.License
                 throw new Exception("Empty response");
 
             byte[] responseBytes = Convert.FromBase64String(response);
-            string cryptKey = VMProtect.SDK.DecryptString("v93G0rSQKHGmVygLuedr4BvxUKqTiACs2Knv0whKtGodNcgnJCy");
-            string sessionKeyHeader = VMProtect.SDK.DecryptString("sskey_");
-            SecretAlg alg = new SecretAlg(cryptKey);
-            alg.Crypt(responseBytes);
-
+            string magic = VMProtect.SDK.DecryptString("kpdb_rsp");
+            if (!LicenseTools.DecryptResponse(responseBytes))
+                throw new Exception("Can't decrypt response");
+            
+            responseBytes = responseBytes.Skip(4).ToArray();
             ActivationResponse activation = Serializer<ActivationResponse>.Deserialize(Encoding.ASCII.GetString(responseBytes)) as ActivationResponse;
             if (activation == null)
                 throw new Exception("Invalid response");
@@ -211,17 +212,17 @@ namespace KeePassHackEdition.SDK.License
             if (activation.LicenseVersion != _key.Version)
                 throw new Exception("Invalid response version");
 
-            byte[] sessionKey = Convert.FromBase64String(activation.SessionKey);
-            if (sessionKey.Length < sessionKeyHeader.Length)
-                throw new Exception("Invalid session key");
+            byte[] magicBytes = Convert.FromBase64String(activation.Magic);
+            if (magicBytes.Length != magic.Length)
+                throw new Exception("Invalid response magic");
 
-            for(int i = 0; i < sessionKeyHeader.Length; i++)
-                if (sessionKey[i] != (byte)sessionKeyHeader[i])
-                    throw new Exception("Invalid session key magic");
+            for(int i = 0; i < magic.Length; i++)
+                if (magicBytes[i] != (byte)magic[i])
+                    throw new Exception("Invalid response magic");
 
             byte[] versionBytes = BitConverter.GetBytes(activation.LicenseVersion);
             for (int i = 0; i < versionBytes.Length; i++)
-                versionBytes[i] ^= sessionKey[i % sessionKey.Length];
+                versionBytes[i] ^= magicBytes[i % magicBytes.Length];
 
             Usca.KeyPreparedBytes2 = new byte[versionBytes.Length];
             for (int i = 0; i < Usca.KeyPreparedBytes2.Length; i++)
@@ -234,21 +235,26 @@ namespace KeePassHackEdition.SDK.License
         public string GenerateValidActivationResponse()
         {
 #if DEBUG
-            string cryptKey = "v93G0rSQKHGmVygLuedr4BvxUKqTiACs2Knv0whKtGodNcgnJCy";
             ActivationResponse response = new ActivationResponse
             {
                 LicenseVersion = _key.Version,
                 ResponseId = 0,
-                SessionKey = Convert.ToBase64String(Encoding.ASCII.GetBytes(@"sskey_1337865")),
+                Magic = Convert.ToBase64String(Encoding.ASCII.GetBytes(@"kpdb_rsp")),
                 Success = true
             };
             byte[] xml = Encoding.ASCII.GetBytes(Serializer<ActivationResponse>.Serialize(response));
-            SecretAlg alg = new SecretAlg(cryptKey);
-            alg.Crypt(xml);
-            return Convert.ToBase64String(xml);
+            byte[] crc = new Crc32().ComputeHash(xml);
+            crc = crc.Concat(xml).ToArray();
+            LicenseTools.EncryptResponse(crc);
+            return Convert.ToBase64String(crc);
 #else
             throw new Exception("Nice try xD");
 #endif
+        }
+
+        public string GetLicensePromocode()
+        {
+            return Encoding.ASCII.GetString(_key.LicensePayload);
         }
     }
 }

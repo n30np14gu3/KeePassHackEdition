@@ -127,7 +127,8 @@
             this.bDev.Size = new System.Drawing.Size(75, 23);
             this.bDev.TabIndex = 4;
             this.bDev.Text = "[DEV BTN]";
-            this.bDev.UseVisualStyleBackColor = false;
+            this.bDev.UseVisualStyleBackColor = true;
+            this.bDev.Visible = false;
             this.bDev.Click += new System.EventHandler(this.bDev_Click);
             // 
             // ActivationForm
@@ -145,7 +146,6 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "ActivationForm";
-            this.ShowInTaskbar = false;
             this.Text = "Activation";
             this.pOfflineActivation.ResumeLayout(false);
             this.pOfflineActivation.PerformLayout();
