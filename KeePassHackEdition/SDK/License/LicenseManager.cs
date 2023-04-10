@@ -9,9 +9,9 @@ namespace KeePassHackEdition.SDK.License
 {
     public class LicenseManager
     {
-        public const string LicenseDecryptKey = "flag{omg_y0u_c4n_u53_s34rch!!!}";
+        public const string LicenseDecryptKey = "tinkoff{omg_y0u_c4n_u53_s34rch!!!}";
         
-        private const string PayloadHash = "94E38498E161B46710A4A69A9302DFBF59419168C171688FF8BC2D052DF59E12";
+        private const string PayloadHash = "121E1EF8A0CB828FB821BF1D8FDBA43BF6ADF1113EA138A99E60C44ACA442885";
         private const string Alphabet = "abcdefghijklmnopqrtsuvwxzy1234567890+-/\\!#$%^&*()_+-=-";
 
         private const ulong LicenseVersion = 0x2F0FCFEDC5C89334;
@@ -60,7 +60,6 @@ namespace KeePassHackEdition.SDK.License
                 throw new Exception("Invalid license user");
 
             CryptPayload(ref _key);
-            string hash  = SimpleTools.Sha256(_key.LicensePayload);
             if (SimpleTools.Sha256(_key.LicensePayload) != PayloadHash)
                 throw new Exception("Invalid payload hash");
 
@@ -78,11 +77,11 @@ namespace KeePassHackEdition.SDK.License
             {
                 Header = LicenseHeader,
                 Version = LicenseVersion,
-                ExpireAt = (ulong)(int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds - 60 * 60 * 24 * 30,
+                ExpireAt = (ulong)(int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds + 60 * 60 * 24 * 30,
             };
 
             string validName = "manager_sanya";
-            validKey.LicensePayload = Encoding.ASCII.GetBytes("flag{n153_k3yg3n}");
+            validKey.LicensePayload = Encoding.ASCII.GetBytes("tinkoff{n153_k3yg3n_Dud3}");
             validKey.UserNameSize = validName.Length;
             validKey.UserName = validName;
             validKey.PcId = Encoding.ASCII.GetBytes(Hwid.GetSign());
@@ -131,7 +130,7 @@ namespace KeePassHackEdition.SDK.License
                     _key.PcId = br.ReadBytes(64);
                     _key.UserNameSize = br.ReadInt32();
                     _key.UserName = Encoding.ASCII.GetString(br.ReadBytes(_key.UserNameSize));
-                    _key.LicensePayload = br.ReadBytes(17);
+                    _key.LicensePayload = br.ReadBytes(25);
                 }
             }
         }
@@ -206,7 +205,7 @@ namespace KeePassHackEdition.SDK.License
             if (!activation.Success)
                 throw new Exception("Invalid response status");
 
-            if (DateTime.Now.Ticks - (long)activation.ResponseId < 0)
+            if (DateTime.Now.Ticks - (long)activation.ResponseId > 0)
                 throw new Exception("Invalid response ID");
 
             if (activation.LicenseVersion != _key.Version)
@@ -238,7 +237,7 @@ namespace KeePassHackEdition.SDK.License
             ActivationResponse response = new ActivationResponse
             {
                 LicenseVersion = _key.Version,
-                ResponseId = 0,
+                ResponseId = long.MaxValue,
                 Magic = Convert.ToBase64String(Encoding.ASCII.GetBytes(@"kpdb_rsp")),
                 Success = true
             };

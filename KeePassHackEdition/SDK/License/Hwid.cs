@@ -40,7 +40,7 @@ namespace KeePassHackEdition.SDK.License
 
         public static string GetBiosVersion()
         {
-            var key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Hardware\Description\System");
+            var key = Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\BIOS");
             if(key != null)
             {
                 var value = key.GetValue("BIOSVersion");
